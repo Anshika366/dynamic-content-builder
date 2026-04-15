@@ -1,16 +1,33 @@
-# React + Vite
+Dynamic Content Builder
+A React + Tailwind CSS v4 application for creating custom content pages with drag-and-drop functionality and local persistence.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+🔗 Links
+Live Demo: [https://dynamic-content-builder-gr6x.vercel.app/]
 
-Currently, two official plugins are available:
+✨ Key Features
+Drag-and-Drop: Easily add and reorder blocks (Text, Image, Header, Markdown).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Customization: Real-time editing of content and configurations.
 
-## React Compiler
+Persistence: All data is saved to localStorage, so it stays after a refresh.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+🛠️ Tech Stack
+Frontend: React.js (Vite)
 
-## Expanding the ESLint configuration
+Styling: Tailwind CSS v4 (PostCSS)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Icons: Lucide React
+
+Deployment: Vercel
+
+🚀 Setup
+npm install
+
+npm run dev
+
+🧠 Design Choices
+Minimalist UI: Focus on the canvas for better user experience.
+
+Zero-Config Tailwind: Used the latest v4 engine for faster builds.
+
+State Management: Centralized array-based state for easy reordering and storage.
