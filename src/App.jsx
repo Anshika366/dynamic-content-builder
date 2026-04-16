@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useCallback } from "react";
+import React, { useEffect, useReducer, useCallback, useRef } from "react";
 import {
   DndContext,
   closestCorners,
@@ -16,7 +16,7 @@ import Palette from "./components/Palette";
 import Canvas from "./components/Canvas";
 import Block from "./components/Block";
 
-const initialState = [];
+const STORAGE_KEY = "page_builder_v6_final";
 
 function reducer(state, action) {
   switch (action.type) {
@@ -38,7 +38,8 @@ function reducer(state, action) {
 }
 
 export default function App() {
-  const [blocks, dispatch] = useReducer(reducer, initialState);
+  const [blocks, dispatch] = useReducer(reducer, []);
+  const isLoaded = useRef(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -47,27 +48,29 @@ export default function App() {
   );
 
   useEffect(() => {
-    const saved = localStorage.getItem("page_builder_v6_final");
+    const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           dispatch({ type: "LOAD", payload: parsed });
         }
       } catch (e) {
-        console.error("Local storage error", e);
+        console.error("Storage error", e);
       }
     }
+    isLoaded.current = true;
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("page_builder_v6_final", JSON.stringify(blocks));
+    if (isLoaded.current) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks));
+    }
   }, [blocks]);
 
   const handleDragEnd = useCallback(
     (event) => {
       const { active, over } = event;
-
       if (!over) return;
 
       if (active.data.current?.fromPalette) {
