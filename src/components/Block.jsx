@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, Trash2, ChevronDown } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 export default function Block({ block, dispatch }) {
+  const [isFocused, setIsFocused] = useState(false);
+
   const {
     attributes,
     listeners,
@@ -15,14 +19,13 @@ export default function Block({ block, dispatch }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 50 : "auto",
-    opacity: isDragging ? 0.6 : 1,
+    zIndex: isDragging ? 100 : "auto",
   };
 
-  const updateContent = (newContent) => {
+  const updateContent = (newData) => {
     dispatch({
       type: "UPDATE_BLOCK",
-      payload: { ...block, content: { ...block.content, ...newContent } },
+      payload: { ...block, content: { ...block.content, ...newData } },
     });
   };
 
@@ -30,82 +33,115 @@ export default function Block({ block, dispatch }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="relative group mb-6 flex items-start"
+      className={`group bg-white rounded-2xl border-2 transition-all duration-300 ${
+        isDragging
+          ? "opacity-40 shadow-2xl scale-[1.02] border-blue-500"
+          : isFocused
+            ? "border-blue-400 shadow-lg ring-4 ring-blue-50"
+            : "border-slate-100 hover:border-slate-300 hover:shadow-md"
+      }`}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
     >
-      {/* Drag Handle */}
+      {/* Block Toolbar - Grip and Red-on-Hover Delete */}
       <div
-        {...attributes}
-        {...listeners}
-        className="mt-4 mr-2 p-2 bg-white border border-slate-200 shadow-sm rounded cursor-grab opacity-0 group-hover:opacity-100 transition-opacity"
+        className={`flex items-center justify-between px-5 py-2 transition-colors rounded-t-2xl ${
+          isFocused ? "bg-blue-50/50" : "bg-slate-50/30"
+        }`}
       >
-        <svg width="15" height="15" viewBox="0 0 20 20" fill="gray">
-          <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-12a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"></path>
-        </svg>
-      </div>
-
-      {/* Main Content Box */}
-      <div className="flex-1 bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab text-slate-300 hover:text-blue-500 p-1 touch-none"
+        >
+          <GripVertical size={18} />
+        </div>
+        {/* Updated Delete Button: Black by default, Red on Hover */}
         <button
           onClick={() => dispatch({ type: "DELETE_BLOCK", payload: block.id })}
-          className="absolute top-2 right-2 text-red-400 hover:text-red-600 p-1 text-xs font-bold"
+          className="text-slate-600 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-all"
         >
-          ✕
+          <Trash2 size={16} strokeWidth={2.5} />
         </button>
+      </div>
 
+      <div className="p-7">
         {block.type === "header" && (
-          <div>
+          <div className="flex gap-4 items-center">
+            {/* Header Level Selector */}
+            <div className="relative group/select min-w-[80px]">
+              <select
+                value={block.content.level}
+                onChange={(e) =>
+                  updateContent({ level: Number(e.target.value) })
+                }
+                className="appearance-none w-full bg-slate-100 border-none rounded-xl pl-4 pr-9 py-2 text-sm font-bold text-slate-700 cursor-pointer focus:ring-2 focus:ring-blue-400 transition-all hover:bg-slate-200"
+              >
+                <option value="1">H1</option>
+                <option value="2">H2</option>
+                <option value="3">H3</option>
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                <ChevronDown size={14} />
+              </div>
+            </div>
+
             <input
-              className="text-2xl font-bold w-full outline-none border-b border-transparent focus:border-blue-300 pb-1"
+              type="text"
               value={block.content.text}
               onChange={(e) => updateContent({ text: e.target.value })}
-              placeholder="Enter Header..."
+              className={`w-full font-black border-none focus:ring-0 p-0 text-slate-800 placeholder-slate-300 bg-transparent transition-all ${
+                block.content.level === 1
+                  ? "text-4xl"
+                  : block.content.level === 2
+                    ? "text-3xl"
+                    : "text-2xl"
+              }`}
+              placeholder="Enter Heading Text..."
             />
           </div>
         )}
 
-        {block.type === "richText" && (
+        {block.type === "text" && (
           <textarea
-            className="w-full h-24 outline-none border-none resize-none text-slate-700"
             value={block.content.text}
             onChange={(e) => updateContent({ text: e.target.value })}
-            placeholder="Start typing your story..."
+            placeholder="Write your content here..."
+            className="w-full border-none focus:ring-0 resize-none min-h-[100px] p-0 text-lg text-slate-600 leading-relaxed placeholder-slate-200 bg-transparent"
           />
         )}
 
         {block.type === "image" && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <input
-              className="w-full text-sm border-b border-slate-200 focus:border-blue-400 outline-none p-1"
+              type="text"
               value={block.content.url}
               onChange={(e) => updateContent({ url: e.target.value })}
-              placeholder="Paste Image URL here..."
+              placeholder="Paste image link here..."
+              className="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-300 outline-none transition-all text-slate-600"
             />
-            {block.content.url ? (
+            {block.content.url && (
               <img
                 src={block.content.url}
-                alt="preview"
-                className="rounded-lg max-h-60 mx-auto object-cover"
+                alt="Preview"
+                className="w-full h-auto rounded-xl shadow-md border-4 border-white max-h-[400px] object-contain mx-auto transition-transform hover:scale-[1.005]"
               />
-            ) : (
-              <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-lg p-8 text-center text-slate-400 text-sm">
-                Image Preview Area
-              </div>
             )}
           </div>
         )}
 
         {block.type === "markdown" && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col md:flex-row gap-5 min-h-[180px]">
             <textarea
-              className="w-full h-32 p-2 bg-slate-50 text-xs font-mono rounded border-none resize-none"
               value={block.content.text}
               onChange={(e) => updateContent({ text: e.target.value })}
-              placeholder="# Markdown supported"
+              placeholder="# Markdown Support"
+              className="flex-1 bg-slate-900 text-blue-50 rounded-xl p-5 font-mono text-sm min-h-[180px] border-none focus:ring-2 focus:ring-blue-500 shadow-inner"
             />
-            <div className="prose prose-sm overflow-auto h-32 p-2 border-l border-slate-100">
-              {block.content.text || (
-                <span className="text-slate-300">Preview...</span>
-              )}
+            <div className="flex-1 prose prose-slate p-5 border border-slate-100 rounded-xl bg-slate-50/50 overflow-auto max-h-[250px]">
+              <ReactMarkdown>
+                {block.content.text || "*Markdown preview will appear here*"}
+              </ReactMarkdown>
             </div>
           </div>
         )}

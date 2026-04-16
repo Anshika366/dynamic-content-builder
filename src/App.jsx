@@ -42,7 +42,9 @@ export default function App() {
   const isLoaded = useRef(false);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
   );
 
   useEffect(() => {
@@ -92,9 +94,13 @@ export default function App() {
           newBlocks.splice(overIndex + 1, 0, newBlock);
           dispatch({ type: "REORDER", payload: newBlocks });
         }
-      } else if (active.id !== over.id) {
+        return;
+      }
+
+      if (active.id !== over.id) {
         const oldIndex = blocks.findIndex((b) => b.id === active.id);
         const newIndex = blocks.findIndex((b) => b.id === over.id);
+
         if (oldIndex !== -1 && newIndex !== -1) {
           dispatch({
             type: "REORDER",
